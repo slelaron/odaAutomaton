@@ -38,3 +38,6 @@ $ java -jar target/oda-1.0-SNAPSHOT-jar-with-dependencies.jar [FLAGS]
 ```
 
 FLAGS: -i [data/INPUT], -o [result/OUTPUT], -bee [to generate result/BEE], -beepp2bee [to generate result/BEEPP2BEE], -dot [to generate result/DOT]
+
+### Example
+$ java -jar target/oda-1.0-SNAPSHOT-jar-with-dependencies.jar -i sum -o output -bee -beepp2bee -dot
