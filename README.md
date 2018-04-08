@@ -29,6 +29,7 @@ You should get automaton. First line contains number of states and number of edg
 4
 1 2 3 4
 ```
+###Running
 
 To run the program add "BumbleBEE" and "pl-satsolver.so" to the project directory and execute
 
@@ -39,5 +40,7 @@ $ java -jar target/oda-1.0-SNAPSHOT-jar-with-dependencies.jar [FLAGS]
 
 FLAGS: -i [data/INPUT], -o [result/OUTPUT], -bee [to generate result/BEE], -beepp2bee [to generate result/BEEPP2BEE], -dot [to generate result/DOT]
 
-### Example
+For example:
+```
 $ java -jar target/oda-1.0-SNAPSHOT-jar-with-dependencies.jar -i sum -o output -bee -beepp2bee -dot
+```
