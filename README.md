@@ -2,8 +2,6 @@
 
 Program helps to find minimal ODA automaton consistent with input/output examples.
 
-To run the program add "BumbleBEE" and "pl-satsolver.so" to the project directory.
-
 ### Example
 ```
 3
@@ -32,7 +30,7 @@ You should get automaton. First line contains number of states and number of edg
 1 2 3 4
 ```
 
-To run the program execute
+To run the program add "BumbleBEE" and "pl-satsolver.so" to the project directory and execute
 
 ```
 $ mvn package
