@@ -10,9 +10,6 @@ fun makeGraphVis(listOfEdges: List<Edge<Pair<Char, Char>>>,
                  finals: Array<Boolean>,
                  states: Int,
                  flags: Flags) {
-    if (!Files.exists(Paths.get(resultDir))) {
-        Files.createDirectory(Paths.get(resultDir))
-    }
     PrintWriter(Paths.get(resultDir + "graph.dot").toFile()).use {
         it.write("digraph G {\n")
         it.write("vertex_0 [label=\"1\" root=true ${if (finals[0]) "color=\"red\"" else ""}]\n")

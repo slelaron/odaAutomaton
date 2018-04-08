@@ -1,9 +1,6 @@
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.InputStream
-import java.io.PrintWriter
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.io.*
+import java.nio.file.*
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.*
 
 /**
@@ -58,6 +55,19 @@ fun find(examples: List<Example>,
          inputAlphabet: List<Char>,
          outputAlphabet: List<Char>,
          flags: Flags): Pair<Array<Map<Pair<Char, Char>, Array<Boolean>>>, Array<Boolean>> {
+
+    Files.walkFileTree(Paths.get(resultDir), object: SimpleFileVisitor<Path>() {
+        override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+            Files.delete(file)
+            return FileVisitResult.CONTINUE
+        }
+        override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
+            Files.delete(dir)
+            return FileVisitResult.CONTINUE
+        }
+    })
+    Files.createDirectory(Paths.get(resultDir))
+
     var amount = 1
     while (true) {
         var result: Pair<Array<Map<Pair<Char, Char>, Array<Boolean>>>, Array<Boolean>>? = null
@@ -65,8 +75,8 @@ fun find(examples: List<Example>,
         System.err.println("Iteration $amount")
 
         wrapWithTimer("$amount iteration") {
-            val curInput = "input${if (flags.saveAllBEE2BEEP) "$amount" else ""}"
-            val curOutput = "output${if (flags.saveAllBEE) "$amount" else ""}"
+            val curInput = "${resultDir}beepp${if (flags.saveAllBEEPP) "$amount" else ""}"
+            val curOutput = "${resultDir}bee${if (flags.saveAllBEE) "$amount" else ""}"
 
             val string = generate(examples, alphabet, inputAlphabet, outputAlphabet, amount)
             PrintWriter(Paths.get(curInput).toFile()).use {
@@ -86,9 +96,13 @@ fun find(examples: List<Example>,
             if (scanner != null) {
                 result = scanner.use { decode(it, amount, alphabet) }.apply {
                     bumble.destroy()
-                    Files.deleteIfExists(Paths.get("input"))
                     Files.deleteIfExists(Paths.get("bumbleOutput"))
-                    Files.deleteIfExists(Paths.get("output"))
+                    if (!flags.saveAllBEEPP) {
+                        Files.deleteIfExists(Paths.get(curInput))
+                    }
+                    if (!flags.saveAllBEE) {
+                        Files.deleteIfExists(Paths.get(curOutput))
+                    }
                 }
             }
 

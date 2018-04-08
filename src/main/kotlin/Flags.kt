@@ -9,7 +9,7 @@ import java.nio.file.Paths
 
 class Flags(flags: Array<String>) {
     val saveAllBEE: Boolean
-    val saveAllBEE2BEEP: Boolean
+    val saveAllBEEPP: Boolean
     val saveDotFile: Boolean
     val fileToRead: File?
     val fileToWrite: File?
@@ -24,14 +24,14 @@ class Flags(flags: Array<String>) {
                     map[flags[pos]] = flags[pos + 1]
                     pos++
                 }
-                "-bee", "-bee2beep", "-dot" -> set.add(flags[pos])
+                "-bee", "-beepp", "-dot" -> set.add(flags[pos])
                 else -> throw Exception("Unknown flag")
             }
 
             pos++
         }
         saveAllBEE = set.contains("-bee")
-        saveAllBEE2BEEP = set.contains("-bee2beep")
+        saveAllBEEPP = set.contains("-beepp")
         saveDotFile = set.contains("-dot")
         fileToRead = map["-i"]?.let { Paths.get(dataDir + it).toFile() }
         fileToWrite = map["-o"]?.let { Paths.get(resultDir + it).toFile() }
