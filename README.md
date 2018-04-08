@@ -29,7 +29,7 @@ You should get automaton. First line contains number of states and number of edg
 4
 1 2 3 4
 ```
-###Running
+### Running
 
 To run the program add "BumbleBEE" and "pl-satsolver.so" to the project directory and execute
 
