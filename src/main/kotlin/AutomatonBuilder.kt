@@ -78,7 +78,7 @@ fun find(examples: List<Example>,
             val curInput = "${resultDir}beepp${if (flags.saveAllBEEPP) "$amount" else ""}"
             val curOutput = "${resultDir}bee${if (flags.saveAllBEE) "$amount" else ""}"
 
-            val string = generate(examples, alphabet, inputAlphabet, outputAlphabet, amount)
+            val string = collectFormulas(amount, alphabet, inputAlphabet, outputAlphabet, examples, flags)
             PrintWriter(Paths.get(curInput).toFile()).use {
                 it.write(string)
             }

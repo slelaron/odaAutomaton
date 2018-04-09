@@ -6,15 +6,8 @@ fun generate(examples: List<Example>,
              alphabet: List<Pair<Char, Char>>,
              inputAlphabet: List<Char>,
              outputAlphabet: List<Char>,
-             amount: Int): String {
-
-    val transactions = Array(amount) {i ->
-        mapOf(*alphabet.map {
-            it to Array(amount) {j ->
-                Var("delta_${i}_${it.first}_${it.second}_$j")
-            }
-        }.toTypedArray())
-    }
+             amount: Int,
+             transactions: Array<Map<Pair<Char, Char>, Array<Var>>>): MutableList<CNFBool> {
 
     val isFinal = Array(amount, {i -> Var("isFinal_$i")})
 
@@ -211,8 +204,5 @@ fun generate(examples: List<Example>,
         formulas.add(Equal(cs[0][i], Constant(0)))
     }
 
-    return (Var.get() + Integral.get() + formulas.joinToString("\n")).apply {
-        Var.clear()
-        Integral.clear()
-    }
+    return formulas
 }

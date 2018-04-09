@@ -15,8 +15,8 @@ data class Example(val input: String, val output: String) {
     operator fun get(index: Int) = Pair(input[index], output[index])
 }
 
-fun getInputAlphabet(examples: List<Example>) = setOf(*examples.map(Example::component1).joinToString("").toList().toTypedArray()).toList()
-fun getOutputAlphabet(examples: List<Example>) = setOf(*examples.map(Example::component2).joinToString("").toList().toTypedArray()).toList()
+fun getInputAlphabet(examples: List<Example>) = examples.map(Example::component1).joinToString("").toSortedSet().toList()
+fun getOutputAlphabet(examples: List<Example>) = examples.map(Example::component2).joinToString("").toSortedSet().toList()
 
 fun main(args: Array<String>) {
     val flags = Flags(args)

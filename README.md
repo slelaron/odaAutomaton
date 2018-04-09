@@ -38,9 +38,9 @@ $ mvn package
 $ java -jar target/oda-1.0-SNAPSHOT-jar-with-dependencies.jar [FLAGS]
 ```
 
-FLAGS: -i [data/INPUT], -o [result/OUTPUT], -bee [to generate result/BEE], -beepp [to generate result/BEEPP2BEE], -dot [to generate result/DOT]
+FLAGS: -i [data/INPUT], -o [result/OUTPUT], -bee [to generate result/BEE], -beepp [to generate result/BEEPP2BEE], -dot [to generate result/DOT], -bfs [to use BFS-based predicates]
 
 For example:
 ```
-$ java -jar target/oda-1.0-SNAPSHOT-jar-with-dependencies.jar -i sum -o output -bee -beepp -dot
+$ java -jar target/oda-1.0-SNAPSHOT-jar-with-dependencies.jar -i sum -o output -bee -beepp -dot -bfs
 ```
