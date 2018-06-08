@@ -4,4 +4,5 @@ pl-satsolver.so
 resources/*
 target/*
 result/*
+quabs-bin/*
 ODA.iml

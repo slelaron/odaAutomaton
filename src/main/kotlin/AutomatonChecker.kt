@@ -21,7 +21,7 @@ fun checkAutomaton(listOfEdges: Array<Edge<Pair<Char, Char>>>,
         }
     }
 
-    val projection = Array(states, {cur ->
+    val projection = Array(states, { cur ->
         mutableMapOf<Char, MutableList<Int>>().apply {
             automaton[cur].forEach {
                 getOrPut(it.key.first, { mutableListOf() }).add(it.value)
@@ -125,7 +125,7 @@ fun checkAutomaton(listOfEdges: Array<Edge<Pair<Char, Char>>>,
         }
     }
 
-    val amount = Array(states + 1) {len ->
+    val amount = Array(states + 1) { len ->
         (0 until states).filter { finals[it] }.map { dynamic[len][it] }.sum()
     }
 

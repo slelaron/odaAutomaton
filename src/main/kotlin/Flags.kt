@@ -12,8 +12,9 @@ class Flags(flags: Array<String>) {
     val saveAllBEEPP: Boolean
     val saveDotFile: Boolean
     val addBFSbasedPredicates: Boolean
-    val fileToRead: File?
-    val fileToWrite: File?
+    val solveQBF: Boolean
+    private val fileToRead: File?
+    private val fileToWrite: File?
 
     init {
         val set = mutableSetOf<String>()
@@ -25,7 +26,7 @@ class Flags(flags: Array<String>) {
                     map[flags[pos]] = flags[pos + 1]
                     pos++
                 }
-                "-bee", "-beepp", "-dot", "-bfs" -> set.add(flags[pos])
+                "-bee", "-beepp", "-dot", "-bfs", "-qbf" -> set.add(flags[pos])
                 else -> throw Exception("Unknown flag")
             }
 
@@ -35,6 +36,7 @@ class Flags(flags: Array<String>) {
         saveAllBEEPP = set.contains("-beepp")
         saveDotFile = set.contains("-dot")
         addBFSbasedPredicates = set.contains("-bfs")
+        solveQBF = set.contains("-qbf")
         fileToRead = map["-i"]?.let { Paths.get(dataDir + it).toFile() }
         fileToWrite = map["-o"]?.let { Paths.get(resultDir + it).toFile() }
     }

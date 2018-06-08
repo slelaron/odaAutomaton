@@ -39,16 +39,53 @@ fun isSatisfiable(file: File): Scanner? {
     }
 }
 
+fun isSatisfiableQBF(file: File): Scanner? {
+    val scanner = Scanner(file)
+    //throw Exception()
+    scanner.nextLine()
+    return when (scanner.next() == "r") {
+        true -> {
+            scanner.close()
+            null
+        }
+        else -> scanner
+    }
+}
+
 fun decode(scanner: Scanner, amount: Int, alphabet: List<Pair<Char, Char>>) =
-        Pair(Array(amount) {i ->
+        Pair(Array(amount) { i ->
             mapOf(*alphabet.map {
-                it to Array(amount) {j ->
+                it to Array(amount) { j ->
                     scanner.nextLine() == "delta_${i}_${it.first}_${it.second}_$j = true"
                 }
             }.toTypedArray())
         }, Array(amount) {
             scanner.nextLine() == "isFinal_$it = true"
         })
+
+fun decodeQBF(scanner: Scanner,
+              amount: Int,
+              alphabet: List<Pair<Char, Char>>,
+              trans: Map<String, Triple<Int, Pair<Char, Char>, Int>>,
+              finals: Map<String, Int>): Pair<Array<Map<Pair<Char, Char>, Array<Boolean>>>, Array<Boolean>> {
+    val transactions = Array(amount) {
+        mutableMapOf(*alphabet.map {
+            it to Array(amount) { false }
+        }.toTypedArray())
+    }
+    val isFinal = Array(amount) { false }
+
+    while (!scanner.hasNext("""0""")) {
+        val cur = scanner.next()
+        val (number, value) = if (cur.startsWith('-')) Pair(cur.substring(1), false)
+        else Pair(cur, true)
+        trans[number]?.let { (i, a, j) -> transactions[i][a]?.set(j, value) }
+        finals[number]?.let { isFinal[it] = value }
+    }
+
+    return Pair(transactions.map { it.toMap() }.toTypedArray(), isFinal)
+}
+
 
 fun find(examples: List<Example>,
          alphabet: List<Pair<Char, Char>>,
@@ -75,28 +112,55 @@ fun find(examples: List<Example>,
         System.err.println("Iteration $amount")
 
         wrapWithTimer("$amount iteration") {
-            val curInput = "${resultDir}beepp${if (flags.saveAllBEEPP) "$amount" else ""}"
+            val curInput = "$resultDir${if (flags.solveQBF) "qbf" else "beepp"}${if (flags.saveAllBEEPP) "$amount" else ""}"
             val curOutput = "${resultDir}bee${if (flags.saveAllBEE) "$amount" else ""}"
 
-            val string = collectFormulas(amount, alphabet, inputAlphabet, outputAlphabet, examples, flags)
+            val (transactions, isFinal, string) = collectFormulas(amount, alphabet, inputAlphabet, outputAlphabet, examples, flags)
+
             PrintWriter(Paths.get(curInput).toFile()).use {
                 it.write(string)
             }
 
-            val beepp2bee = ProcessBuilder("java", "-jar", resourcesDir + "beepp2bee/jar/beepp2bee.jar", curInput, curOutput).start()
-            beepp2bee.waitFor()
-            beepp2bee.errorStream.use(::printProcessOutput)
-            beepp2bee.destroy()
+            val processToDestroy = if (!flags.solveQBF) {
+                val beepp2bee = ProcessBuilder("java", "-jar", resourcesDir + "beepp2bee/jar/beepp2bee.jar", curInput, curOutput).start()
+                beepp2bee.waitFor()
+                beepp2bee.errorStream.use(::printProcessOutput)
+                beepp2bee.destroy()
 
-            val bumble = ProcessBuilder("./BumbleBEE", curOutput).redirectOutput(Paths.get("bumbleOutput").toFile()).start()
-            bumble.waitFor()
-            bumble.errorStream.use(::printProcessOutput)
+                val bumble = ProcessBuilder("./BumbleBEE", curOutput).redirectOutput(Paths.get("processOutput").toFile()).start()
+                bumble.waitFor()
+                bumble.errorStream.use(::printProcessOutput)
 
-            val scanner = isSatisfiable(Paths.get("bumbleOutput").toFile())
+                bumble
+            } else {
+                val quabs = ProcessBuilder("./quabs-bin/quabs", "--preprocessing", "0", "--partial-assignment", curInput).redirectOutput(Paths.get("processOutput").toFile()).start()
+                quabs.waitFor()
+                quabs.errorStream.use(::printProcessOutput)
+
+                quabs
+            }
+
+            val scanner = (if (!flags.solveQBF) ::isSatisfiable else ::isSatisfiableQBF)(Paths.get("processOutput").toFile())
             if (scanner != null) {
-                result = scanner.use { decode(it, amount, alphabet) }.apply {
-                    bumble.destroy()
-                    Files.deleteIfExists(Paths.get("bumbleOutput"))
+                result = scanner.use {
+                    if (!flags.solveQBF) {
+                        decode(it, amount, alphabet)
+                    } else {
+                        val trans = mapOf(*transactions.mapIndexed { i, map ->
+                            map.map { (k, v) ->
+                                v.mapIndexed { j, p ->
+                                    p.ref to Triple(i, k, j)
+                                }
+                            }.flatten()
+                        }.flatten().toTypedArray())
+
+                        val finals = mapOf(*isFinal.mapIndexed { index, p -> p.ref to index }.toTypedArray())
+
+                        decodeQBF(it, amount, alphabet, trans, finals)
+                    }
+                }.apply {
+                    processToDestroy.destroy()
+                    Files.deleteIfExists(Paths.get("processOutput"))
                     if (!flags.saveAllBEEPP) {
                         Files.deleteIfExists(Paths.get(curInput))
                     }
@@ -106,7 +170,7 @@ fun find(examples: List<Example>,
                 }
             }
 
-            bumble.destroy()
+            processToDestroy.destroy()
         }
 
         result?.let { return it }

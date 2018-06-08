@@ -1,6 +1,6 @@
 # odaAutomaton
 
-Program helps to find minimal ODA automaton consistent with input/output examples.
+Program helps to find minimal output-deterministic automaton consistent with input/output examples.
 
 ### Example
 ```
@@ -38,7 +38,7 @@ $ mvn package
 $ java -jar target/oda-1.0-SNAPSHOT-jar-with-dependencies.jar [FLAGS]
 ```
 
-FLAGS: -i [data/INPUT], -o [result/OUTPUT], -bee [to generate result/BEE], -beepp [to generate result/BEEPP2BEE], -dot [to generate result/DOT], -bfs [to use BFS-based predicates]
+FLAGS: -i [data/INPUT], -o [result/OUTPUT], -bee [to generate result/BEE], -beepp [to generate result/BEEPP2BEE], -dot [to generate result/DOT], -bfs [to use BFS-based predicates], -qbf [to use QBF solver instead of SAT solver]
 
 For example:
 ```
