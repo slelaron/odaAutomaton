@@ -31,7 +31,7 @@ You should get automaton. First line contains number of states and number of edg
 ```
 ### Running
 
-To run the program add "BumbleBEE" and "pl-satsolver.so" to the project directory and execute
+To run the program add "BumbleBEE" and "pl-satsolver.so" to the project directory and execute. To use -qbf flag below install Quabs (http://qbf.satisfiability.org/gallery/) and add "quabs-bin" to the project directory.
 
 ```
 $ mvn package
