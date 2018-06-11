@@ -314,8 +314,8 @@ fun generate(examples: List<Example>,
                 Negate(correctLength),
                 upperBoundInp,
                 And(
-                        //Negate(upperBoundExistStates),
-                        //Negate(upperBoundExistOutput),
+                        Negate(upperBoundExistStates),
+                        Negate(upperBoundExistOutput),
                         acceptExist,
                         Or(
                                 upperBoundEveryStates,
