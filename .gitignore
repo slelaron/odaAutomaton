@@ -5,4 +5,5 @@ resources/*
 target/*
 result/*
 quabs-bin/*
+processOutput
 ODA.iml

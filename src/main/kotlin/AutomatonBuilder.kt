@@ -93,16 +93,18 @@ fun find(examples: List<Example>,
          outputAlphabet: List<Char>,
          flags: Flags): Pair<Array<Map<Pair<Char, Char>, Array<Boolean>>>, Array<Boolean>> {
 
-    Files.walkFileTree(Paths.get(resultDir), object: SimpleFileVisitor<Path>() {
-        override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-            Files.delete(file)
-            return FileVisitResult.CONTINUE
-        }
-        override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
-            Files.delete(dir)
-            return FileVisitResult.CONTINUE
-        }
-    })
+    if (Files.exists(Paths.get(resultDir))) {
+        Files.walkFileTree(Paths.get(resultDir), object: SimpleFileVisitor<Path>() {
+            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                Files.delete(file)
+                return FileVisitResult.CONTINUE
+            }
+            override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
+                Files.delete(dir)
+                return FileVisitResult.CONTINUE
+            }
+        })
+    }
     Files.createDirectory(Paths.get(resultDir))
 
     var amount = 1

@@ -248,6 +248,17 @@ fun generate(examples: List<Example>,
 
         val length = amount * amount
 
+        val inpMap = mapOf(*inputAlphabet.mapIndexed { index, c -> Pair(c, index) }.toTypedArray())
+        val outMap = mapOf(*outputAlphabet.mapIndexed { index, c -> Pair(c, index) }.toTypedArray())
+
+        fun equals(x: List<Var>, y: List<Char>) =
+                And(*(x zip y).map { (a, b) ->
+                    when (b) {
+                        '1' -> a
+                        else -> Negate(a)
+                    }
+                }.toTypedArray())
+
         val symbolsInp = mutableListOf<List<Var>>()
         val upperBoundInp = get(length, binInp, "x", symbolsInp)
         val existStates = mutableListOf<List<Var>>()
@@ -259,25 +270,17 @@ fun generate(examples: List<Example>,
         val everyOutput = mutableListOf<List<Var>>()
         val upperBoundEveryOutput = get(length, binOut, "z", everyOutput)
 
-        val inpMap = mapOf(*inputAlphabet.mapIndexed { index, c -> Pair(c, index) }.toTypedArray())
-        val outMap = mapOf(*outputAlphabet.mapIndexed { index, c -> Pair(c, index) }.toTypedArray())
-
-        fun equals(x: List<Var>, y: List<Char>) =
-                And(*(x zip y).map { (a, b) ->
-                    when (b) {
-                        '1'  -> a
-                        else -> Negate(a)
-                    }
-                }.toTypedArray())
+        val theLength = Array(length + 1) { Var("len_$it") }
+        val correctLength = And(Negate(theLength[0]), theLength[length], *(0 until length).map { Impl(theLength[it], theLength[it + 1]) }.toTypedArray())
 
         fun addAccepter(from: MutableList<List<Var>>, symbolsOut: MutableList<List<Var>>): CNFBool {
             val list = mutableListOf<CNFBool>()
             for (k in 0 until length) {
-                list.add(Or(*transactions.mapIndexed { i, map ->
+                list.add(Or(theLength[k], *transactions.mapIndexed { i, map ->
                     map.map { (c, array) ->
                         val (a, b) = c
                         array.mapIndexed { j, p ->
-                            And(p,  equals(from[k], getBinary(i, binStates.size)),
+                            And(p, equals(from[k], getBinary(i, binStates.size)),
                                     equals(symbolsInp[k], getBinary(inpMap[a] ?: 0, binInp.size)),
                                     equals(symbolsOut[k], getBinary(outMap[b] ?: 0, binOut.size)),
                                     equals(from[k + 1], getBinary(j, binStates.size)))
@@ -285,9 +288,11 @@ fun generate(examples: List<Example>,
                     }.flatten()
                 }.flatten().toTypedArray()))
             }
-            list.add(Or(*isFinal.mapIndexed { index, p ->
-                And(p, equals(from[length], getBinary(index, binStates.size)))
-            }.toTypedArray()))
+            for (i in 0 until length) {
+                list.add(Or(theLength[i], Negate(theLength[i + 1]), *isFinal.mapIndexed { index, p ->
+                    And(p, equals(from[i + 1], getBinary(index, binStates.size)))
+                }.toTypedArray()))
+            }
             list.add(equals(from[0], getBinary(0, binStates.size)))
             return And(*list.toTypedArray())
         }
@@ -295,35 +300,37 @@ fun generate(examples: List<Example>,
         val acceptExist = addAccepter(existStates, existOutput)
         val acceptEvery = addAccepter(everyStates, everyOutput)
 
-        val equalFormula = And(*(existStates zip everyStates).map { (a, b) ->
+        val equalFormula = And(*(existStates zip everyStates).drop(1).mapIndexed { index, (a, b) ->
             (a zip b).map { (c, d) ->
-                Equiv(c, d)
+                Or(theLength[index], Equiv(c, d))
             }
-        }.flatten().toTypedArray(), *(existOutput zip everyOutput).map { (a, b) ->
+        }.flatten().toTypedArray(), *(existOutput zip everyOutput).mapIndexed { index, (a, b) ->
             (a zip b).map { (c, d) ->
-                Equiv(c, d)
+                Or(theLength[index], Equiv(c, d))
             }
         }.flatten().toTypedArray())
 
-        /*val lastFormula = Or(
+        val lastFormula = Or(
+                Negate(correctLength),
                 upperBoundInp,
                 And(
-                        Negate(upperBoundExistStates),
+                        //Negate(upperBoundExistStates),
+                        //Negate(upperBoundExistOutput),
                         acceptExist,
                         Or(
                                 upperBoundEveryStates,
+                                upperBoundEveryOutput,
                                 Negate(acceptEvery),
                                 equalFormula
                         )
                 )
-        )*/
+        )
 
-        val lastFormula = Or(upperBoundInp, upperBoundEveryStates, Negate(acceptEvery), equalFormula)
-
-        formulas.add(acceptExist)
         formulas.add(lastFormula)
+        formulas.add(isFinal[0])
 
         args[0].addAll(symbolsInp.flatten())
+        args[0].addAll(theLength)
         args[1].addAll(existStates.flatten())
         args[1].addAll(existOutput.flatten())
         args[2].addAll(everyStates.flatten())
