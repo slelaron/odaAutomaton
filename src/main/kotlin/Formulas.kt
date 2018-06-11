@@ -58,7 +58,7 @@ object Zero: CNFBool {
 
 class Negate(val of: CNFBool): CNFBool {
     override val ref: String
-        get() = "-${of.ref}"
+        get() = (of as? Negate)?.of?.ref ?: "-${of.ref}"
 
     override fun toQBFinternal(builder: StringBuilder) {
         of.toQBFinternal(builder)
